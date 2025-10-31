@@ -79,7 +79,9 @@
     <Content Include="Pages\Profile.aspx" />
     <Content Include="Pages\Register.aspx" />
     <Content Include="Pages\ViewBill.aspx" />
-    <Content Include="SQL\Create_Table.sql" />
+    <Content Include="SQL\DDL.sql" />
+    <Content Include="SQL\DML.sql" />
+    <Content Include="SQL\DQL.sql" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
