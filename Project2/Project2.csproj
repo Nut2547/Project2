@@ -70,7 +70,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Pages\Main.html" />
     <Content Include="Pages\ManageProducts.aspx" />
     <Content Include="Pages\Cart.aspx" />
     <Content Include="Pages\Checkbill.aspx" />
