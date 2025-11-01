@@ -112,5 +112,10 @@ namespace Project2.Pages
         {
             Response.Redirect("Home.aspx");
         }
+        protected void btnHistory_Click(object sender, EventArgs e)
+        {
+            Response.Redirect("OrderHistory.aspx");
+        }
+
     }
 }

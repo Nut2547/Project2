@@ -10,7 +10,6 @@ namespace Project2.Pages
 
         protected void btnLogin_Click(object sender, EventArgs e)
         {
-
             if (string.IsNullOrWhiteSpace(txtUsername.Text) || string.IsNullOrWhiteSpace(txtPassword.Text))
             {
                 lblMsg.Text = "❌ กรุณากรอกชื่อผู้ใช้และรหัสผ่าน";
@@ -20,40 +19,42 @@ namespace Project2.Pages
             using (SqlConnection con = new SqlConnection(cs))
             {
                 con.Open();
-                string query = "SELECT Role FROM Users WHERE Username=@u AND Password=@p";
+
+                // ✅ ดึงทั้ง UserID และ Role จาก Users
+                string query = "SELECT UserID, Role FROM Users WHERE Username=@u AND Password=@p";
 
                 using (SqlCommand cmd = new SqlCommand(query, con))
                 {
                     cmd.Parameters.AddWithValue("@u", txtUsername.Text);
                     cmd.Parameters.AddWithValue("@p", txtPassword.Text);
 
-                    object result = cmd.ExecuteScalar();
-
-                    if (result != null)
+                    using (SqlDataReader reader = cmd.ExecuteReader())
                     {
-                        string role = result.ToString();
+                        if (reader.Read())
+                        {
+                            // ✅ เก็บข้อมูลเข้าสู่ระบบใน Session
+                            Session["UserID"] = reader["UserID"];  // ใช้ใน CheckBill
+                            Session["Username"] = txtUsername.Text;
+                            Session["Role"] = reader["Role"].ToString();
+                            Session["IsLoggedIn"] = true;
 
-                        // เก็บข้อมูลการเข้าสู่ระบบใน Session
-                        Session["Username"] = txtUsername.Text;
-                        Session["Role"] = role;
-                        Session["IsLoggedIn"] = true;
+                            lblMsg.Text = "✅ เข้าสู่ระบบสำเร็จ";
 
-                        // แสดงข้อความยืนยันการเข้าสู่ระบบ
-                        lblMsg.Text = "✅ เข้าสู่ระบบสำเร็จ";
-
-                        // ไปยังหน้าที่เหมาะสมตาม Role
-                        if (role == "Admin")
-                            Response.Redirect("~/Pages/ManageProducts.aspx");
+                            // ✅ แยกหน้าไปตาม Role
+                            if (reader["Role"].ToString() == "Admin")
+                                Response.Redirect("~/Pages/ManageProducts.aspx");
+                            else
+                                Response.Redirect("~/Pages/Home.aspx");
+                        }
                         else
-                            Response.Redirect("~/Pages/Home.aspx");
-                    }
-                    else
-                    {
-                        lblMsg.Text = "❌ ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง";
+                        {
+                            lblMsg.Text = "❌ ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง";
+                        }
                     }
                 }
             }
         }
+
         protected void btnBackHome_Click(object sender, EventArgs e)
         {
             Response.Redirect("Home.aspx");

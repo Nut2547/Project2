@@ -136,6 +136,9 @@
 </head>
 <body>
     <form id="form1" runat="server">
+        <asp:Button ID="btnHistory" runat="server" Text="ดูประวัติการสั่งซื้อ" 
+    OnClick="btnHistory_Click" CssClass="btn" />
+            
         <asp:Button ID="btnBackHome" runat="server" Text="กลับหน้าหลัก" CssClass="btnBackHome" OnClick="btnBackHome_Click" />
 
         <h2>ข้อมูลส่วนตัว</h2>
