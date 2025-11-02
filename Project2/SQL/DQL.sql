@@ -1,38 +1,73 @@
-﻿--1. แสดงชื่อสินค้าทั้งหมดพร้อมจำนวนสินค้าในคลัง
-SELECT ProductName, Quantity
-FROM Products;
-
---2.แสดงราคาสินค้าเฉลี่ยในระบบทั้งหมด
-SELECT AVG(Price) AS AveragePrice
-FROM Products;
-
---3. แสดงสินค้าที่มีราคาสูงกว่าราคาเฉลี่ย
-SELECT ProductID, ProductName, Price
-FROM Products
-WHERE Price > (SELECT AVG(Price) FROM Products);
-
---4. แสดงสินค้าที่มีจำนวนคงเหลือต่ำกว่า 5 ชิ้น
-SELECT ProductID, ProductName, Quantity
-FROM Products
-WHERE Quantity < 5;
-
---5. รวมราคาสินค้าทั้งหมดในสต็อก
-SELECT SUM(Price * Quantity) AS TotalStockValue
-FROM Products;
-
---6. แสดงสินค้าราคาสูงสุดและต่ำสุด
+﻿--1. แสดงยอดขายรวมของแต่ละสินค้า
 SELECT 
-    (SELECT ProductName FROM Products WHERE Price = (SELECT MAX(Price) FROM Products)) AS MostExpensiveProduct,
-    (SELECT ProductName FROM Products WHERE Price = (SELECT MIN(Price) FROM Products)) AS CheapestProduct;
+    P.ProductName,
+    SUM(OD.Quantity) AS TotalSold,
+    SUM(OD.Quantity * OD.Price) AS TotalRevenue
+FROM OrderDetails OD
+JOIN Products P ON OD.ProductID = P.ProductID
+GROUP BY P.ProductName
+ORDER BY TotalRevenue DESC;
 
---7. แสดงจำนวนสินค้าทั้งหมดในระบบ
-SELECT COUNT(ProductID) AS TotalProducts
-FROM Products;
+--2.แสดงบิลทั้งหมดพร้อมชื่อผู้สั่งซื้อ
+SELECT 
+    O.OrderID,
+    U.UserName,
+    O.OrderDate,
+    O.TotalAmount
+FROM Orders O
+JOIN Users U ON O.UserID = U.UserID
+ORDER BY O.OrderDate DESC;
 
---8. แสดงชื่อ-นามสกุลผู้ใช้ทั้งหมดเรียงตามชื่อ
-SELECT FirstName + ' ' + LastName AS FullName
-FROM Users
-ORDER BY FirstName ASC;
+--3. แสดงสินค้าที่มียอดขายเกิน 100 ชิ้น
+SELECT 
+    P.ProductName,
+    SUM(OD.Quantity) AS TotalSold
+FROM OrderDetails OD
+JOIN Products P ON OD.ProductID = P.ProductID
+GROUP BY P.ProductName
+HAVING SUM(OD.Quantity) > 100;
+
+--4. แสดงสินค้าที่ไม่เคยถูกสั่งซื้อเลย
+SELECT 
+    P.ProductID,
+    P.ProductName
+FROM Products P
+LEFT JOIN OrderDetails OD ON P.ProductID = OD.ProductID
+WHERE OD.ProductID IS NULL;
+
+--5. แสดงข้อมูลคำสั่งซื้อพร้อมยอดรวมของแต่ละรายการ
+SELECT 
+    O.OrderID,
+    COUNT(OD.ProductID) AS ItemsCount,
+    SUM(OD.Price * OD.Quantity) AS OrderTotal
+FROM Orders O
+JOIN OrderDetails OD ON O.OrderID = OD.OrderID
+GROUP BY O.OrderID;
+
+--6. ดึงประวัติการสั่งซื้อของผู้ใช้แต่ละคน
+SELECT U.UserName, U.FirstName, U.LastName, P.OrderID, P.OrderDate, P.TotalAmount
+FROM Users U
+JOIN PurchaseOrders P ON U.UserName = P.UserName
+ORDER BY P.OrderDate DESC;
+
+--7. หายอดรวมการขายของแต่ละวัน
+SELECT 
+    CONVERT(date, OrderDate) AS OrderDate,
+    SUM(TotalAmount) AS DailyTotal
+FROM PurchaseOrders
+GROUP BY CONVERT(date, OrderDate)
+ORDER BY OrderDate DESC;
+
+--8. แสดงรายละเอียดคำสั่งซื้อพร้อมจำนวนสินค้าในแต่ละบิล
+SELECT 
+    PO.OrderID,
+    PO.UserName,
+    COUNT(OP.ProductID) AS ProductCount,
+    PO.TotalAmount
+FROM PurchaseOrders PO
+JOIN OrderProducts OP ON PO.OrderID = OP.OrderID
+GROUP BY PO.OrderID, PO.UserName, PO.TotalAmount
+ORDER BY PO.OrderID DESC;
 
 --9. แสดงผู้ใช้แต่ละ Role พร้อมจำนวนผู้ใช้ในแต่ละ Role
 SELECT Role, COUNT(UserID) AS TotalUsers
